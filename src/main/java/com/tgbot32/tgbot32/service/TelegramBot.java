@@ -11,6 +11,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 @Component
 public class TelegramBot extends TelegramLongPollingBot {
     final BotConfig config;
+    final Methods methods = new Methods();
 
     public TelegramBot(BotConfig config) {
         this.config = config;
@@ -40,29 +41,26 @@ public class TelegramBot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         long chatId = update.getMessage().getChatId();
-        Methods methods = new Methods();
+        //Methods methods = new Methods();
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
-            if (messageText.equals("/start") || messageText.equals("/help")) {
-                String response = "поиск свободных комнат /getFreeRooms\n" +
-                        "поиск свободных комнат с условием /getFreeRooms 1000-2000 2 bar conditioner\n" +
-                        "бронирование комнаты /reserve 32\n" +
-                        "выселение /goOut 32";
-                BotGiveResponse(response, chatId);
+            if (messageText.equals("/start")) {
+                BotGiveResponse(methods.StartMessage(), chatId);
+            } else if (messageText.equals("/help")) {
+                BotGiveResponse(methods.HelpMessage(), chatId);
             } else if (messageText.equals("/getFreeRooms")) {
                 BotGiveResponse(methods.PrintFreeRooms(), chatId);
+            } else if (messageText.equals("/getFreeRoomsWithAllInfo")) {
+                BotGiveResponse(methods.PrintFreeRoomsWithAllInfo(), chatId);
             } else if (messageText.contains("/getFreeRooms")) {
-
-            } else if (messageText.equals("/reserve")) {
-
-            } else if (messageText.equals("/goOut")) {
-
+                BotGiveResponse(methods.PrintFreeRoomsWithTerms(messageText), chatId);
+            } else if (messageText.contains("/reserve")) {
+                BotGiveResponse(methods.ReserveRoom(messageText), chatId);
+            } else if (messageText.contains("/goOut")) {
+                BotGiveResponse(methods.GoOutRoom(messageText), chatId);
             } else {
-                String response = "Нет такой команды, для получения списка команд используйте /help";
-                BotGiveResponse(response, chatId);
+                BotGiveResponse(methods.ErrorNotFoundCommand(), chatId);
             }
         }
-
-
     }
 }
